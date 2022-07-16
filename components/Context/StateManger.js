@@ -1,18 +1,17 @@
 import React, { createContext, useContext, useState, useRef } from "react";
-import useSWR from "swr";
 import { v4 as uuidv4 } from "uuid";
 
 const AppContext = createContext();
 
 const StateWrapper = ({ children }) => {
+  // Pagination functions
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(5);
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
   //Input text feild value for filtering
   const [inputValue, setInputValue] = useState("");
-
-  //Fetch data from our API
-  const fetcher = (url) => fetch(url).then((res) => res.json());
-  const { data, error } = useSWR("api/table", fetcher, {
-    refreshInterval: 100,
-  });
 
   //Getting values of form's inputs
   const dateRef = useRef();
@@ -48,7 +47,6 @@ const StateWrapper = ({ children }) => {
       method: "DELETE",
     });
     const data = await res.json();
-    console.log(data);
   };
 
   //On add item submit form functions
@@ -75,8 +73,6 @@ const StateWrapper = ({ children }) => {
 
   //Context React values for using everywhere
   let values = {
-    data,
-    error,
     dateRef,
     titleRef,
     quantityRef,
@@ -89,6 +85,11 @@ const StateWrapper = ({ children }) => {
     selectCondition,
     selectColumnHandler,
     selectConditionHandler,
+    currentPage,
+    setCurrentPage,
+    indexOfFirstRecord,
+    indexOfLastRecord,
+    recordsPerPage,
   };
   return <AppContext.Provider value={values}>{children}</AppContext.Provider>;
 };

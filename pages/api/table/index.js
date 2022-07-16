@@ -34,7 +34,7 @@ const handler = async (req, res) => {
       .sort({ id: -1 })
       .toArray();
 
-    res.status(200).json({ items: itemsList });
+    res.status(200).json(itemsList);
   }
 
   client.close();

@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import Form from "../Form/Form";
+import Loading from "../LoadingPage/Loading";
 import { useAppContext } from "../Context/StateManger";
 import Filters from "../Filters/Filters";
+import Pagination from "../Pagination/Pagination";
+import useSWR from "swr";
 
 //Some styled components to make it look pretty
 const TabelContainer = styled.div`
@@ -105,24 +108,29 @@ const TabelData = styled.td`
 const TablelHeader = styled.th``;
 
 const Tabel = () => {
-  const { data, error, deleteItem, inputValue, selectColumn, selectCondition } =
-    useAppContext();
+  const {
+    deleteItem,
+    inputValue,
+    selectColumn,
+    selectCondition,
+    indexOfFirstRecord,
+    indexOfLastRecord,
+    recordsPerPage,
+  } = useAppContext();
 
+  //Fetching data from API
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const { data, error } = useSWR("api/table", fetcher, {
+    refreshInterval: 100,
+  });
+
+  //Check the exisiting of the data
   if (error) return "An error has occurred.";
-  if (!data)
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          display: "felx",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <h1 style={{ fontWeight: 700, color: "#fff" }}>LOADING</h1>
-      </div>
-    );
+  if (!data) return <Loading />;
+
+  // Filter how many items per page
+  const currentRecords = data.slice(indexOfFirstRecord, indexOfLastRecord);
+  const nPages = Math.ceil(data.length / recordsPerPage);
 
   return (
     <TabelContainer>
@@ -139,7 +147,7 @@ const Tabel = () => {
           </TabelRow>
         </TableHead>
         <TableBody>
-          {data.items
+          {currentRecords
             .filter((item) => {
               if (inputValue !== "") {
                 if (selectColumn === "title") {
@@ -204,6 +212,7 @@ const Tabel = () => {
             })}
         </TableBody>
       </Table>
+      <Pagination nPages={nPages} />
     </TabelContainer>
   );
 };
