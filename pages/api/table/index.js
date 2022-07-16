@@ -31,7 +31,7 @@ const handler = async (req, res) => {
     const itemsList = await db
       .collection("items")
       .find()
-      .sort({ id: -1 })
+      .sort({ _id: -1 })
       .toArray();
 
     res.status(200).json(itemsList);
